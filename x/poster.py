@@ -1,5 +1,4 @@
 import requests
-import tweepy
 from config import X_OAUTH2_CLIENT_ID, X_OAUTH2_CLIENT_SECRET, X_OAUTH2_REFRESH_TOKEN
 
 
@@ -22,7 +21,7 @@ def _get_access_token() -> str:
 def post_tweet(text: str) -> str:
     """
     X（Twitter）にツイートを投稿する。
-    OAuth 2.0 ユーザーコンテキストを使用。
+    OAuth 2.0 ユーザーコンテキストを使用（requests直接呼び出し）。
     Returns: tweet_id
     """
     print(f"[X] ツイート投稿開始...")
@@ -32,18 +31,21 @@ def post_tweet(text: str) -> str:
     access_token = _get_access_token()
     print(f"[X] アクセストークン取得完了")
 
-    client = tweepy.Client(access_token=access_token)
+    response = requests.post(
+        "https://api.x.com/2/tweets",
+        headers={
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
+        },
+        json={"text": text},
+        timeout=30,
+    )
 
-    try:
-        response = client.create_tweet(text=text, user_auth=False)
-    except tweepy.errors.Unauthorized as e:
-        print(f"[X] 401エラー詳細: {e.response.text}")
-        raise
-    except tweepy.errors.Forbidden as e:
-        print(f"[X] 403エラー詳細: {e.response.text}")
-        raise
+    if not response.ok:
+        print(f"[X] 投稿エラー詳細: {response.text}")
+    response.raise_for_status()
 
-    tweet_id = str(response.data["id"])
+    tweet_id = str(response.json()["data"]["id"])
     print(f"[X] 投稿完了! Tweet ID: {tweet_id}")
     print(f"[X] URL: https://x.com/uni_keisuke/status/{tweet_id}")
     return tweet_id
