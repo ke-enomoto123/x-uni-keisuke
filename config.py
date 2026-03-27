@@ -21,6 +21,9 @@ X_API_SECRET = os.getenv("X_API_SECRET")
 X_ACCESS_TOKEN = os.getenv("X_ACCESS_TOKEN")
 X_ACCESS_TOKEN_SECRET = os.getenv("X_ACCESS_TOKEN_SECRET")
 X_BEARER_TOKEN = os.getenv("X_BEARER_TOKEN")
+X_OAUTH2_CLIENT_ID = "RUpzQnpZTElmbGpFWExndHlvUHI6MTpjaQ"
+X_OAUTH2_CLIENT_SECRET = "ayMsw7w1JLPvPGCpXiAHZf5XJauRkSZbPxV1J4bjOdwrpldIjr"
+X_OAUTH2_REFRESH_TOKEN = os.getenv("X_OAUTH2_REFRESH_TOKEN")
 
 # account_config の再エクスポート
 __all__ = [
