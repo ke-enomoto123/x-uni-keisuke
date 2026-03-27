@@ -11,6 +11,9 @@ def post_tweet(text: str) -> str:
     print(f"[X] ツイート投稿開始...")
     print(f"[X] 文字数: {len(text)}")
     print(f"[X] 内容: {text[:60]}...")
+    print(f"[X] API_KEY末尾4文字: ...{X_API_KEY[-4:] if X_API_KEY else 'NONE'}")
+    print(f"[X] ACCESS_TOKEN末尾4文字: ...{X_ACCESS_TOKEN[-4:] if X_ACCESS_TOKEN else 'NONE'}")
+    print(f"[X] ACCESS_TOKEN_SECRET末尾4文字: ...{X_ACCESS_TOKEN_SECRET[-4:] if X_ACCESS_TOKEN_SECRET else 'NONE'}")
 
     client = tweepy.Client(
         bearer_token=X_BEARER_TOKEN,
