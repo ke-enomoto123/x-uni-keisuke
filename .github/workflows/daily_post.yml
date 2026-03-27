@@ -5,6 +5,10 @@ on:
     - cron: '0 12 * * *'  # 毎日 21:00 JST (UTC 12:00)
   workflow_dispatch:        # 手動実行も可能
 
+permissions:
+  contents: read
+  secrets: write
+
 jobs:
   post:
     runs-on: ubuntu-latest
@@ -30,6 +34,7 @@ jobs:
           X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
           X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}
           X_OAUTH2_REFRESH_TOKEN: ${{ secrets.X_OAUTH2_REFRESH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python main.py
 
       - name: Save logs

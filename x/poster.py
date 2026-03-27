@@ -1,9 +1,55 @@
+import base64
+import os
 import requests
 from config import X_OAUTH2_CLIENT_ID, X_OAUTH2_CLIENT_SECRET, X_OAUTH2_REFRESH_TOKEN
 
 
+def _update_github_secret(new_refresh_token: str):
+    """新しいリフレッシュトークンをGitHub Secretsに自動保存"""
+    try:
+        from nacl import encoding, public
+
+        github_token = os.getenv("GITHUB_TOKEN")
+        repo = os.getenv("GITHUB_REPOSITORY", "ke-enomoto123/x-uni-keisuke")
+
+        if not github_token:
+            print("[X] GITHUB_TOKEN なし - Secret更新スキップ")
+            return
+
+        headers = {
+            "Authorization": f"token {github_token}",
+            "Accept": "application/vnd.github.v3+json",
+        }
+
+        # 公開鍵を取得
+        key_resp = requests.get(
+            f"https://api.github.com/repos/{repo}/actions/secrets/public-key",
+            headers=headers,
+        )
+        key_data = key_resp.json()
+
+        # 暗号化
+        pub_key = public.PublicKey(key_data["key"].encode("utf-8"), encoding.Base64Encoder())
+        encrypted = base64.b64encode(
+            public.SealedBox(pub_key).encrypt(new_refresh_token.encode("utf-8"))
+        ).decode("utf-8")
+
+        # Secret更新
+        resp = requests.put(
+            f"https://api.github.com/repos/{repo}/actions/secrets/X_OAUTH2_REFRESH_TOKEN",
+            headers=headers,
+            json={"encrypted_value": encrypted, "key_id": key_data["key_id"]},
+        )
+        if resp.ok:
+            print("[X] リフレッシュトークンを自動更新しました ✅")
+        else:
+            print(f"[X] Secret更新失敗: {resp.status_code} {resp.text}")
+    except Exception as e:
+        print(f"[X] Secret更新エラー（続行）: {e}")
+
+
 def _get_access_token() -> str:
-    """リフレッシュトークンを使って新しいアクセストークンを取得"""
+    """リフレッシュトークンを使って新しいアクセストークンを取得し、トークンをローテーション"""
     response = requests.post(
         "https://api.x.com/2/oauth2/token",
         auth=(X_OAUTH2_CLIENT_ID, X_OAUTH2_CLIENT_SECRET),
@@ -15,13 +61,23 @@ def _get_access_token() -> str:
     if not response.ok:
         print(f"[X] トークン取得エラー: {response.text}")
     response.raise_for_status()
-    return response.json()["access_token"]
+
+    data = response.json()
+    access_token = data["access_token"]
+
+    # 新しいリフレッシュトークンをGitHub Secretsに保存
+    new_refresh_token = data.get("refresh_token")
+    if new_refresh_token:
+        print(f"[X] 新しいリフレッシュトークンを取得 → GitHub Secretsに保存中...")
+        _update_github_secret(new_refresh_token)
+
+    return access_token
 
 
 def post_tweet(text: str) -> str:
     """
     X（Twitter）にツイートを投稿する。
-    OAuth 2.0 ユーザーコンテキストを使用（requests直接呼び出し）。
+    OAuth 2.0 ユーザーコンテキストを使用。
     Returns: tweet_id
     """
     print(f"[X] ツイート投稿開始...")
