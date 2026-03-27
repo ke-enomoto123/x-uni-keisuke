@@ -35,7 +35,7 @@ def post_tweet(text: str) -> str:
     client = tweepy.Client(access_token=access_token)
 
     try:
-        response = client.create_tweet(text=text)
+        response = client.create_tweet(text=text, user_auth=False)
     except tweepy.errors.Unauthorized as e:
         print(f"[X] 401エラー詳細: {e.response.text}")
         raise
