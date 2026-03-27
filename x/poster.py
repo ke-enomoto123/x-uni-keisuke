@@ -20,7 +20,15 @@ def post_tweet(text: str) -> str:
         access_token_secret=X_ACCESS_TOKEN_SECRET,
     )
 
-    response = client.create_tweet(text=text)
+    try:
+        response = client.create_tweet(text=text)
+    except tweepy.errors.Unauthorized as e:
+        print(f"[X] 401エラー詳細: {e.response.text}")
+        raise
+    except tweepy.errors.Forbidden as e:
+        print(f"[X] 403エラー詳細: {e.response.text}")
+        raise
+
     tweet_id = str(response.data["id"])
     print(f"[X] 投稿完了! Tweet ID: {tweet_id}")
     print(f"[X] URL: https://x.com/uni_keisuke/status/{tweet_id}")
