@@ -9,11 +9,11 @@ def _update_github_secret(new_refresh_token: str):
     try:
         from nacl import encoding, public
 
-        github_token = os.getenv("GITHUB_TOKEN")
+        github_token = os.getenv("GH_PAT")
         repo = os.getenv("GITHUB_REPOSITORY", "ke-enomoto123/x-uni-keisuke")
 
         if not github_token:
-            print("[X] GITHUB_TOKEN なし - Secret更新スキップ")
+            print("[X] GH_PAT なし - Secret更新スキップ")
             return
 
         headers = {
