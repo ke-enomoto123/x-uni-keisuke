@@ -1,5 +1,5 @@
 import tweepy
-from config import X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET
+from config import X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET, X_BEARER_TOKEN
 
 
 def post_tweet(text: str) -> str:
@@ -13,6 +13,7 @@ def post_tweet(text: str) -> str:
     print(f"[X] 内容: {text[:60]}...")
 
     client = tweepy.Client(
+        bearer_token=X_BEARER_TOKEN,
         consumer_key=X_API_KEY,
         consumer_secret=X_API_SECRET,
         access_token=X_ACCESS_TOKEN,
